@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="it" class="h-full dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Accordatore Cromatico Pro</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#10b981">
+    <link rel="icon" href="icon-192.png">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .no-select {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        .keyboard-scroll::-webkit-scrollbar {
+            height: 6px;
+        }
+        .keyboard-scroll::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.1);
+            border-radius: 4px;
+        }
+        .dark .keyboard-scroll::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.1);
+        }
+        .keyboard-scroll::-webkit-scrollbar-thumb {
+            background: rgba(0,0,0,0.3);
+            border-radius: 4px;
+        }
+        .dark .keyboard-scroll::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.3);
+        }
+    </style>
+</head>
+<body class="h-full bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 font-sans transition-colors duration-200 no-select overflow-x-hidden flex flex-col justify-between">
+
+    <!-- Header / Navbar -->
+    <header class="w-full max-w-md mx-auto px-4 pt-4 flex justify-between items-center">
+        <div class="flex items-center space-x-2">
+            <svg class="w-6 h-6 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12 0c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path>
+            </svg>
+            <h1 class="text-xl font-bold tracking-tight">Tuner Pro</h1>
+        </div>
+        <button id="themeToggleBtn" class="p-2 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700 transition">
+            <svg id="sunIcon" class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+            <svg id="moonIcon" class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+        </button>
+    </header>
+
+    <!-- Content Container -->
+    <main class="w-full max-w-md mx-auto px-4 py-2 flex-1 flex flex-col justify-evenly items-center">
+        
+        <!-- Display Nota Principale -->
+        <div class="text-center my-2">
+            <div id="noteDisplayGroup" class="flex items-baseline justify-center space-x-3 transition-colors duration-150">
+                <span id="noteNameIT" class="text-6xl font-black tracking-tight text-slate-300 dark:text-slate-700">--</span>
+                <span id="noteNameINT" class="text-3xl font-bold text-slate-400 dark:text-slate-500">(--)</span>
+            </div>
+            <div class="flex items-center justify-center space-x-2 mt-1">
+                <span id="octaveDisplay" class="text-sm font-semibold px-2.5 py-0.5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400">Ottava -</span>
+                <span id="frequencyDisplay" class="text-sm font-semibold px-2.5 py-0.5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400">0.0 Hz</span>
+            </div>
+        </div>
+
+        <!-- Ago & Indicatore Cents -->
+        <div class="w-full bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-xl border border-slate-100 dark:border-slate-700/50 relative overflow-hidden my-2">
+            <div class="relative w-full h-16 flex items-center justify-center">
+                <div class="absolute w-full h-1 bg-slate-200 dark:bg-slate-700 rounded-full"></div>
+                <div class="absolute left-1/2 -translate-x-1/2 w-0.5 h-6 bg-slate-400 dark:bg-slate-500"></div>
+                <div class="absolute left-1/4 -translate-x-1/2 w-0.5 h-3 bg-slate-300 dark:bg-slate-600"></div>
+                <div class="absolute left-3/4 -translate-x-1/2 w-0.5 h-3 bg-slate-300 dark:bg-slate-600"></div>
+                <div id="needle" class="absolute w-1 h-12 bg-slate-400 rounded-full shadow-md transition-all duration-75 ease-out transform -translate-x-1/2 origin-bottom" style="left: 50%;"></div>
+            </div>
+            <div class="flex justify-between items-center text-xs font-bold text-slate-400 mt-2">
+                <span>-50 Cents</span>
+                <span id="tuningStatus" class="text-sm tracking-wider uppercase">In Attesa</span>
+                <span>+50 Cents</span>
+            </div>
+        </div>
+
+        <!-- Controlli Pitch Riferimento A4 -->
+        <div class="flex items-center justify-center space-x-4 w-full bg-slate-200/50 dark:bg-slate-800/40 py-2 px-4 rounded-xl my-1">
+            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Riferimento A4:</span>
+            <div class="flex items-center space-x-2">
+                <button id="pitchDecBtn" class="w-7 h-7 rounded-lg bg-white dark:bg-slate-700 shadow text-slate-700 dark:text-slate-200 font-bold hover:bg-slate-100 active:scale-95 transition">-</button>
+                <span id="pitchRefDisplay" class="font-mono font-bold text-sm min-w-[55px] text-center">440 Hz</span>
+                <button id="pitchIncBtn" class="w-7 h-7 rounded-lg bg-white dark:bg-slate-700 shadow text-slate-700 dark:text-slate-200 font-bold hover:bg-slate-100 active:scale-95 transition">+</button>
+            </div>
+        </div>
+
+        <!-- Pulsante Principale Microfono -->
+        <button id="toggleMicBtn" class="w-full py-3.5 px-6 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold shadow-lg shadow-emerald-500/30 active:scale-95 transition-all duration-150 flex items-center justify-center space-x-3 my-2">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>
+            </svg>
+            <span id="btnText">Avvia Accordatore</span>
+        </button>
+        <p id="micStatus" class="text-xs text-center text-slate-500 dark:text-slate-400 min-h-4" role="status" aria-live="polite">Permesso microfono non ancora richiesto</p>
+
+        <!-- Sezione Tastiera Pianoforte Scorrevole -->
+        <div class="w-full mt-2">
+            <div class="flex justify-between items-center mb-1 px-1">
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Pianoforte di Riferimento</span>
+                <span class="text-[10px] text-slate-400 italic">Trascina per scorrere</span>
+            </div>
+            <div id="keyboardWrapper" class="keyboard-scroll w-full overflow-x-auto bg-slate-800 dark:bg-slate-950 p-2 rounded-2xl shadow-inner cursor-grab active:cursor-grabbing select-none">
+                <div id="keyboardContainer" class="flex relative h-28 items-start w-max"></div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full text-center py-2 text-xs text-slate-400">
+        Web Audio API Tuner
+    </footer>
+
+    <script>
+        const NOTE_NAMES = [
+            { it: "DO", int: "C" }, { it: "DO#", int: "C#" },
+            { it: "RE", int: "D" }, { it: "RE#", int: "D#" },
+            { it: "MI", int: "E" }, { it: "FA", int: "F" },
+            { it: "FA#", int: "F#" }, { it: "SOL", int: "G" },
+            { it: "SOL#", int: "G#" }, { it: "LA", int: "A" },
+            { it: "LA#", int: "A#" }, { it: "SI", int: "B" }
+        ];
+
+        let audioCtx = null;
+        let analyser = null;
+        let micStream = null;
+        let isListening = false;
+        let a4Ref = 440;
+        let pitchBuffer = [];
+        let pitchBuf = null;
+        const MIN_FREQ = 30; // frequenza minima rilevabile (Hz)
+        const BUFFER_SIZE = 5;
+
+        const toggleMicBtn = document.getElementById('toggleMicBtn');
+        const btnText = document.getElementById('btnText');
+        const noteNameIT = document.getElementById('noteNameIT');
+        const noteNameINT = document.getElementById('noteNameINT');
+        const octaveDisplay = document.getElementById('octaveDisplay');
+        const frequencyDisplay = document.getElementById('frequencyDisplay');
+        const needle = document.getElementById('needle');
+        const tuningStatus = document.getElementById('tuningStatus');
+        const pitchRefDisplay = document.getElementById('pitchRefDisplay');
+        const pitchIncBtn = document.getElementById('pitchIncBtn');
+        const pitchDecBtn = document.getElementById('pitchDecBtn');
+        const themeToggleBtn = document.getElementById('themeToggleBtn');
+        const keyboardWrapper = document.getElementById('keyboardWrapper');
+        const keyboardContainer = document.getElementById('keyboardContainer');
+        const micStatus = document.getElementById('micStatus');
+
+        themeToggleBtn.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+        });
+
+        pitchIncBtn.addEventListener('click', () => {
+            if (a4Ref < 450) { a4Ref++; pitchRefDisplay.textContent = `${a4Ref} Hz`; }
+        });
+        pitchDecBtn.addEventListener('click', () => {
+            if (a4Ref > 430) { a4Ref--; pitchRefDisplay.textContent = `${a4Ref} Hz`; }
+        });
+
+        toggleMicBtn.addEventListener('click', async () => {
+            if (isListening) {
+                stopTuner();
+            } else {
+                await startTuner();
+            }
+        });
+
+        async function startTuner() {
+            try {
+                // getUserMedia richiede un contesto sicuro: HTTPS oppure localhost.
+                if (!window.isSecureContext) {
+                    throw new Error("INSECURE_CONTEXT");
+                }
+
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    throw new Error("MIC_NOT_SUPPORTED");
+                }
+
+                micStatus.textContent = "Richiesta di autorizzazione al microfono…";
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+                // Disattiva i filtri automatici per mantenere il suono più fedele,
+                // caratteristica utile per un accordatore musicale.
+                micStream = await navigator.mediaDevices.getUserMedia({
+                    audio: {
+                        echoCancellation: false,
+                        noiseSuppression: false,
+                        autoGainControl: false
+                    }
+                });
+
+                await audioCtx.resume();
+
+                const source = audioCtx.createMediaStreamSource(micStream);
+                analyser = audioCtx.createAnalyser();
+                analyser.fftSize = 4096; // finestra più lunga: rileva anche le note basse (fino a ~30 Hz)
+                source.connect(analyser);
+
+                isListening = true;
+                micStatus.textContent = "Microfono attivo";
+                micStatus.className = "text-xs text-center text-emerald-600 dark:text-emerald-400 min-h-4";
+                btnText.textContent = "Ferma Accordatore";
+                toggleMicBtn.classList.remove('bg-emerald-500', 'hover:bg-emerald-600', 'shadow-emerald-500/30');
+                toggleMicBtn.classList.add('bg-rose-500', 'hover:bg-rose-600', 'shadow-rose-500/30');
+
+                updatePitch();
+            } catch (err) {
+                console.error("Errore accesso microfono:", err);
+
+                // In caso di errore rilascia sempre le risorse eventualmente aperte.
+                if (micStream) {
+                    micStream.getTracks().forEach(track => track.stop());
+                    micStream = null;
+                }
+                if (audioCtx) {
+                    try { await audioCtx.close(); } catch (closeError) { console.warn(closeError); }
+                    audioCtx = null;
+                }
+                analyser = null;
+                isListening = false;
+
+                let message = "Impossibile accedere al microfono.";
+                if (err.message === "INSECURE_CONTEXT") {
+                    message = "Per usare il microfono, apri questa pagina tramite HTTPS oppure localhost.";
+                } else if (err.message === "MIC_NOT_SUPPORTED") {
+                    message = "Questo browser non supporta l'accesso al microfono.";
+                } else if (err.name === "NotAllowedError" || err.name === "SecurityError") {
+                    message = "Accesso al microfono negato. Consenti l'uso del microfono nelle autorizzazioni del browser e riprova.";
+                } else if (err.name === "NotFoundError" || err.name === "DevicesNotFoundError") {
+                    message = "Non è stato trovato alcun microfono collegato al dispositivo.";
+                } else if (err.name === "NotReadableError" || err.name === "TrackStartError") {
+                    message = "Il microfono è occupato o non è accessibile. Chiudi le altre applicazioni che lo stanno usando e riprova.";
+                }
+
+                micStatus.textContent = message;
+                micStatus.className = "text-xs text-center text-rose-600 dark:text-rose-400 min-h-4";
+                alert(message);
+            }
+        }
+
+        function stopTuner() {
+            isListening = false;
+            if (micStream) {
+                micStream.getTracks().forEach(track => track.stop());
+                micStream = null;
+            }
+            if (audioCtx) {
+                audioCtx.close().catch(err => console.warn("Errore chiusura audio:", err));
+                audioCtx = null;
+            }
+            analyser = null;
+
+            micStatus.textContent = "Microfono disattivato";
+            micStatus.className = "text-xs text-center text-slate-500 dark:text-slate-400 min-h-4";
+            btnText.textContent = "Avvia Accordatore";
+            toggleMicBtn.classList.remove('bg-rose-500', 'hover:bg-rose-600', 'shadow-rose-500/30');
+            toggleMicBtn.classList.add('bg-emerald-500', 'hover:bg-emerald-600', 'shadow-emerald-500/30');
+
+            resetDisplay();
+        }
+
+        function resetDisplay() {
+            noteNameIT.textContent = "--";
+            noteNameINT.textContent = "(--)";
+            noteNameIT.className = "text-6xl font-black tracking-tight text-slate-300 dark:text-slate-700";
+            octaveDisplay.textContent = "Ottava -";
+            frequencyDisplay.textContent = "0.0 Hz";
+            needle.style.left = "50%";
+            needle.className = "absolute w-1 h-12 bg-slate-400 rounded-full shadow-md transition-all duration-75 ease-out transform -translate-x-1/2 origin-bottom";
+            tuningStatus.textContent = "In Attesa";
+            tuningStatus.className = "text-sm tracking-wider uppercase text-slate-400";
+        }
+
+        function autoCorrelate(buf, sampleRate) {
+            let SIZE = buf.length;
+            let rms = 0;
+            for (let i = 0; i < SIZE; i++) {
+                let val = buf[i];
+                rms += val * val;
+            }
+            rms = Math.sqrt(rms / SIZE);
+            if (rms < 0.01) return -1;
+
+            let r1 = 0, r2 = SIZE - 1, thres = 0.2;
+            for (let i = 0; i < SIZE / 2; i++) {
+                if (Math.abs(buf[i]) < thres) { r1 = i; break; }
+            }
+            for (let i = 1; i < SIZE / 2; i++) {
+                if (Math.abs(buf[SIZE - i]) < thres) { r2 = SIZE - i; break; }
+            }
+
+            buf = buf.slice(r1, r2);
+            SIZE = buf.length;
+
+            if (SIZE < 64) return -1;
+
+            // Calcola l'autocorrelazione solo fino al ritardo corrispondente a MIN_FREQ
+            const maxLag = Math.min(SIZE - 2, Math.floor(sampleRate / MIN_FREQ));
+            const c = new Float64Array(maxLag + 2);
+            for (let i = 0; i <= maxLag + 1; i++) {
+                let sum = 0;
+                for (let j = 0; j < SIZE - i; j++) {
+                    sum += buf[j] * buf[j + i];
+                }
+                c[i] = sum;
+            }
+
+            let d = 0;
+            while (d < maxLag && c[d] > c[d + 1]) d++;
+            let maxval = -1, maxpos = -1;
+            for (let i = d; i <= maxLag; i++) {
+                if (c[i] > maxval) {
+                    maxval = c[i];
+                    maxpos = i;
+                }
+            }
+            let T0 = maxpos;
+            if (T0 < 1) return -1;
+
+            let x1 = c[T0 - 1], x2 = c[T0], x3 = c[T0 + 1];
+            let a = (x1 + x3 - 2 * x2) / 2;
+            let b = (x3 - x1) / 2;
+            if (a) T0 = T0 - b / (2 * a);
+
+            return sampleRate / T0;
+        }
+
+        function getSmoothPitch(pitch) {
+            pitchBuffer.push(pitch);
+            if (pitchBuffer.length > BUFFER_SIZE) pitchBuffer.shift();
+            let sorted = [...pitchBuffer].sort((a, b) => a - b);
+            return sorted[Math.floor(sorted.length / 2)];
+        }
+
+        function updatePitch() {
+            if (!isListening) return;
+
+            if (!pitchBuf || pitchBuf.length !== analyser.fftSize) {
+                pitchBuf = new Float32Array(analyser.fftSize);
+            }
+            const buf = pitchBuf;
+            analyser.getFloatTimeDomainData(buf);
+            const pitch = autoCorrelate(buf, audioCtx.sampleRate);
+
+            if (pitch !== -1) {
+                const smoothPitch = getSmoothPitch(pitch);
+                const noteNum = 12 * (Math.log(smoothPitch / a4Ref) / Math.log(2)) + 69;
+                const roundedNote = Math.round(noteNum);
+                const noteIndex = (roundedNote % 12 + 12) % 12;
+                const octave = Math.floor(roundedNote / 12) - 1;
+                
+                const expectedFreq = a4Ref * Math.pow(2, (roundedNote - 69) / 12);
+                const cents = Math.round(1200 * Math.log2(smoothPitch / expectedFreq));
+
+                const noteObj = NOTE_NAMES[noteIndex];
+                noteNameIT.textContent = noteObj.it;
+                noteNameINT.textContent = `(${noteObj.int})`;
+                octaveDisplay.textContent = `Ottava ${octave}`;
+                frequencyDisplay.textContent = `${smoothPitch.toFixed(1)} Hz`;
+
+                const clampedCents = Math.max(-50, Math.min(50, cents));
+                const needlePos = 50 + clampedCents;
+                needle.style.left = `${needlePos}%`;
+
+                if (Math.abs(cents) <= 4) {
+                    noteNameIT.className = "text-6xl font-black tracking-tight text-emerald-500 dark:text-emerald-400";
+                    needle.className = "absolute w-1 h-12 bg-emerald-500 rounded-full shadow-md transition-all duration-75 ease-out transform -translate-x-1/2 origin-bottom";
+                    tuningStatus.textContent = "Intonato";
+                    tuningStatus.className = "text-sm tracking-wider uppercase font-bold text-emerald-500";
+                } else if (cents < -4) {
+                    noteNameIT.className = "text-6xl font-black tracking-tight text-amber-500 dark:text-amber-400";
+                    needle.className = "absolute w-1 h-12 bg-amber-500 rounded-full shadow-md transition-all duration-75 ease-out transform -translate-x-1/2 origin-bottom";
+                    tuningStatus.textContent = "Calante (-)";
+                    tuningStatus.className = "text-sm tracking-wider uppercase font-bold text-amber-500";
+                } else {
+                    noteNameIT.className = "text-6xl font-black tracking-tight text-rose-500 dark:text-rose-400";
+                    needle.className = "absolute w-1 h-12 bg-rose-500 rounded-full shadow-md transition-all duration-75 ease-out transform -translate-x-1/2 origin-bottom";
+                    tuningStatus.textContent = "Crescente (+)";
+                    tuningStatus.className = "text-sm tracking-wider uppercase font-bold text-rose-500";
+                }
+            }
+
+            requestAnimationFrame(updatePitch);
+        }
+
+        function renderKeyboard() {
+            keyboardContainer.innerHTML = '';
+            let currentLeft = 0;
+            const whiteKeyWidth = 36;
+            const blackKeyWidth = 22;
+
+            for (let octave = 2; octave <= 6; octave++) {
+                NOTE_NAMES.forEach((note, index) => {
+                    const midiNote = (octave + 1) * 12 + index;
+                    const freq = a4Ref * Math.pow(2, (midiNote - 69) / 12);
+                    const isSharp = note.it.includes('#');
+
+                    const key = document.createElement('button');
+                    key.dataset.freq = freq;
+                    key.dataset.noteIt = note.it;
+                    key.dataset.noteInt = note.int;
+                    key.dataset.octave = octave;
+
+                    if (!isSharp) {
+                        key.className = 'w-9 h-28 bg-slate-100 hover:bg-slate-200 active:bg-emerald-300 border border-slate-300 rounded-b-md flex flex-col justify-end items-center pb-1 text-[10px] font-bold text-slate-600 transition-colors flex-shrink-0 z-10';
+                        key.innerHTML = `<span>${note.it}</span><span class="text-[8px] text-slate-400">${octave}</span>`;
+                        key.style.left = `${currentLeft}px`;
+                        currentLeft += whiteKeyWidth;
+                    } else {
+                        key.className = 'w-5 h-16 bg-slate-900 hover:bg-slate-700 active:bg-emerald-600 border border-slate-700 rounded-b-md flex flex-col justify-end items-center pb-1 text-[8px] font-semibold text-slate-200 transition-colors absolute z-20 shadow-md';
+                        key.style.left = `${currentLeft - (blackKeyWidth / 2)}px`;
+                        key.innerHTML = `<span>${note.it}</span>`;
+                    }
+
+                    key.addEventListener('pointerdown', () => {
+                        if (isDragging) return;
+                        playTone(freq);
+                        highlightKeyNote(note.it, note.int, octave, freq);
+                    });
+
+                    keyboardContainer.appendChild(key);
+                });
+            }
+        }
+
+        function highlightKeyNote(it, int, octave, freq) {
+            noteNameIT.textContent = it;
+            noteNameINT.textContent = `(${int})`;
+            octaveDisplay.textContent = `Ottava ${octave}`;
+            frequencyDisplay.textContent = `${freq.toFixed(1)} Hz`;
+            noteNameIT.className = "text-6xl font-black tracking-tight text-emerald-500 dark:text-emerald-400";
+        }
+
+        function playTone(freq) {
+            const ctx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, ctx.currentTime);
+
+            gain.gain.setValueAtTime(0.3, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 1.2);
+
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+
+            osc.start();
+            osc.stop(ctx.currentTime + 1.2);
+        }
+
+        let isDown = false;
+        let startX;
+        let scrollLeft;
+        let isDragging = false;
+
+        keyboardWrapper.addEventListener('mousedown', (e) => {
+            isDown = true;
+            isDragging = false;
+            startX = e.pageX - keyboardWrapper.offsetLeft;
+            scrollLeft = keyboardWrapper.scrollLeft;
+        });
+
+        keyboardWrapper.addEventListener('mouseleave', () => { isDown = false; });
+        keyboardWrapper.addEventListener('mouseup', () => { isDown = false; setTimeout(() => { isDragging = false; }, 50); });
+
+        keyboardWrapper.addEventListener('mousemove', (e) => {
+            if (!isDown) return;
+            e.preventDefault();
+            const x = e.pageX - keyboardWrapper.offsetLeft;
+            const walk = (x - startX) * 1.5;
+            if (Math.abs(walk) > 5) isDragging = true;
+            keyboardWrapper.scrollLeft = scrollLeft - walk;
+        });
+
+        keyboardWrapper.addEventListener('touchstart', (e) => {
+            isDown = true;
+            isDragging = false;
+            startX = e.touches[0].pageX - keyboardWrapper.offsetLeft;
+            scrollLeft = keyboardWrapper.scrollLeft;
+        }, { passive: true });
+
+        keyboardWrapper.addEventListener('touchend', () => { isDown = false; setTimeout(() => { isDragging = false; }, 50); });
+
+        keyboardWrapper.addEventListener('touchmove', (e) => {
+            if (!isDown) return;
+            const x = e.touches[0].pageX - keyboardWrapper.offsetLeft;
+            const walk = (x - startX) * 1.5;
+            if (Math.abs(walk) > 5) isDragging = true;
+            keyboardWrapper.scrollLeft = scrollLeft - walk;
+        }, { passive: true });
+
+        renderKeyboard();
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').catch(() => {});
+            });
+        }
+    </script>
+</body>
+</html>
